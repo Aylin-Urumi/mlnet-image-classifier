@@ -1,20 +1,28 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:ImageClassifierApp.ViewModels"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="ImageClassifierApp.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="ImageClassifierApp">
+        x:Class="ImageClassifierApp.Views.MainWindow"
+        Title="ML.NET Image Classifier"
+        Width="500" Height="600"
+        WindowStartupLocation="CenterScreen">
 
-    <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainWindowViewModel/>
-    </Design.DataContext>
+    <StackPanel Margin="20" Spacing="15">
+        <TextBlock Text="ML.NET Image Classifier" 
+                   FontSize="24" FontWeight="Bold" 
+                   HorizontalAlignment="Center"/>
+        
+        <Border BorderBrush="Gray" BorderThickness="2" CornerRadius="10" Height="300">
+            <Image Source="{Binding SelectedImage}" Stretch="Uniform" />
+        </Border>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <TextBlock Text="{Binding PredictionResult}" 
+                   FontSize="18" Foreground="Green"
+                   HorizontalAlignment="Center" FontWeight="SemiBold"/>
 
+        <Button Content="Upload &amp; Classify" 
+                Command="{Binding SelectImageCommand}"
+                HorizontalAlignment="Center" Padding="20,10"
+                Classes="accent" />
+    </StackPanel>
 </Window>

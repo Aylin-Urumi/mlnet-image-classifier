@@ -15,34 +15,40 @@ public class MLService
 
     public bool IsTrained => _model != null;
 
-    public MLService()
-    {
-        _mlContext = new MLContext(seed: 1);
-    }
+    public MLService() => _mlContext = new MLContext(seed: 1);
 
     public void TrainModel(string trainDataPath)
     {
-        // Path logic: We use the path passed from the ViewModel directly.
-        // It should point to the "Data" folder containing folders 0-9.
-        var images = LoadImagesFromDirectory(trainDataPath);
-        var trainData = _mlContext.Data.LoadFromEnumerable(images);
+        try
+        {
+            var images = LoadImagesFromDirectory(trainDataPath).ToList();
 
-        // Standard Image Classification Pipeline
-        var pipeline = _mlContext.Transforms.Conversion.MapValueToKey("Label")
-            .Append(_mlContext.Transforms.LoadImages("ImageObject", imageFolder: null, inputColumnName: "ImagePath"))
-            .Append(_mlContext.Transforms.ResizeImages("ImageResized", imageWidth: 224, imageHeight: 224, inputColumnName: "ImageObject"))
-            .Append(_mlContext.Transforms.ExtractPixels("Features", "ImageResized"))
-            .Append(_mlContext.MulticlassClassification.Trainers.LbfgsMaximumEntropy("Label", "Features"))
-            // We tell it to map the key back to the original folder name (0-9)
-            .Append(_mlContext.Transforms.Conversion.MapKeyToValue("PredictedLabel", "PredictedLabel"));
+            // Print the first path to the terminal so we can see it
+            if (images.Any())
+                Console.WriteLine($"DEBUG: Attempting to load first image at: {images[0].ImagePath}");
 
-        _model = pipeline.Fit(trainData);
+            var trainData = _mlContext.Data.LoadFromEnumerable(images);
+
+            var pipeline = _mlContext.Transforms.Conversion.MapValueToKey("Label")
+                .Append(_mlContext.Transforms.LoadImages("ImageObject", imageFolder: null, inputColumnName: "ImagePath"))
+                .Append(_mlContext.Transforms.ResizeImages("ImageResized", 224, 224, "ImageObject"))
+                .Append(_mlContext.Transforms.ExtractPixels("Features", "ImageResized"))
+                .Append(_mlContext.MulticlassClassification.Trainers.LbfgsMaximumEntropy("Label", "Features"))
+                .Append(_mlContext.Transforms.Conversion.MapKeyToValue("PredictedLabel"));
+
+            _model = pipeline.Fit(trainData);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("--- ML.NET ENGINE ERROR ---");
+            Console.WriteLine(ex.ToString()); // This will show the FULL technical error in the terminal
+            throw;
+        }
     }
 
     public ImagePrediction Predict(string imagePath)
     {
         if (_model == null) throw new Exception("Model not trained!");
-
         var engine = _mlContext.Model.CreatePredictionEngine<ImageData, ImagePrediction>(_model);
         return engine.Predict(new ImageData { ImagePath = imagePath });
     }
@@ -52,32 +58,23 @@ public class MLService
         var images = new List<ImageData>();
         var extensions = new[] { ".jpg", ".jpeg", ".png" };
 
-        // 1. Get all subdirectories (0, 1, 2... 9)
-        var directories = Directory.GetDirectories(folder);
-
-        foreach (var dir in directories)
+        foreach (var directory in Directory.GetDirectories(folder))
         {
-            string label = Path.GetFileName(dir); // Gets the folder name as the label
-            
-            // 2. Get only valid image files in this specific folder
-            var files = Directory.GetFiles(dir)
-                .Where(f => extensions.Contains(Path.GetExtension(f).ToLower()))
-                .Where(f => !Path.GetFileName(f).StartsWith(".")); // EXPLICITLY ignore hidden Mac files
+            string label = Path.GetFileName(directory);
+            var files = Directory.GetFiles(directory);
 
             foreach (var file in files)
             {
-                images.Add(new ImageData
+                string fileName = Path.GetFileName(file);
+                // MAC FIX: Ignore hidden files starting with "." (like .DS_Store or ._image)
+                if (!fileName.StartsWith(".") && extensions.Contains(Path.GetExtension(file).ToLower()))
                 {
-                    ImagePath = file,
-                    Label = label
-                });
+                    images.Add(new ImageData { ImagePath = file, Label = label });
+                }
             }
         }
 
-        if (images.Count == 0)
-            throw new Exception($"No valid images found in {folder}. Ensure subfolders 0-9 contain images.");
-
-        Console.WriteLine($"Successfully loaded {images.Count} images for training.");
+        if (images.Count == 0) throw new Exception($"No images found in {folder}. Check folder naming!");
         return images;
     }
 }

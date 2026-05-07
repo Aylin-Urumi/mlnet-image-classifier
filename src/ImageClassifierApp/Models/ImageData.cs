@@ -1,21 +1,22 @@
-using System;
 using Microsoft.ML.Data;
+using System;
 
 namespace ImageClassifierApp.Models;
 
 public class ImageData
 {
-    // ML.NET will use these property names as Column Names automatically
+    [ColumnName("ImagePath")]
     public string ImagePath { get; set; } = string.Empty;
+
+    [ColumnName("Label")]
     public string Label { get; set; } = string.Empty;
 }
 
 public class ImagePrediction
 {
-    // This matches the final step in our pipeline
     [ColumnName("PredictedLabel")]
     public string PredictedLabel { get; set; } = string.Empty;
 
-    // This contains the probability for each digit (0-9)
+    [ColumnName("Score")]
     public float[] Score { get; set; } = Array.Empty<float>();
 }

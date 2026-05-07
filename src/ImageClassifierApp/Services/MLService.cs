@@ -22,19 +22,23 @@ public class MLService
 
     public void TrainModel(string trainDataPath)
     {
-        var images = LoadImagesFromDirectory(trainDataPath);
+        // 1. Force the path to look at the 'Data' folder (Capital D)
+        // We combine the project path with the actual folder name in your sidebar
+        string correctedPath = Path.Combine(Path.GetDirectoryName(trainDataPath)!, "Data");
+
+        var images = LoadImagesFromDirectory(correctedPath);
         var trainData = _mlContext.Data.LoadFromEnumerable(images);
 
-        // Pipeline: Load -> Resize -> Map Labels -> Train -> Map Back
         var pipeline = _mlContext.Transforms.Conversion.MapValueToKey("Label")
-            .Append(_mlContext.Transforms.LoadImages("ImageResized", imageFolder: trainDataPath, inputColumnName: "ImagePath"))
-            .Append(_mlContext.Transforms.ResizeImages("ImageResized", imageWidth: 224, imageHeight: 224))
-            .Append(_mlContext.MulticlassClassification.Trainers.LbfgsMaximumEntropy("Label", "ImageResized"))
+            // Use null here so it uses the absolute paths we found
+            .Append(_mlContext.Transforms.LoadImages("ImageObject", imageFolder: null, inputColumnName: "ImagePath"))
+            .Append(_mlContext.Transforms.ResizeImages("ImageResized", imageWidth: 224, imageHeight: 224, inputColumnName: "ImageObject"))
+            .Append(_mlContext.Transforms.ExtractPixels("Features", "ImageResized"))
+            .Append(_mlContext.MulticlassClassification.Trainers.LbfgsMaximumEntropy("Label", "Features"))
             .Append(_mlContext.Transforms.Conversion.MapKeyToValue("PredictedLabel"));
 
         _model = pipeline.Fit(trainData);
     }
-
     public ImagePrediction Predict(string imagePath)
     {
         if (_model == null) throw new Exception("Model not trained!");
@@ -45,12 +49,29 @@ public class MLService
 
     private IEnumerable<ImageData> LoadImagesFromDirectory(string folder)
     {
-        var types = new[] { "*.jpg", "*.jpeg", "*.png" };
-        return types.SelectMany(ext => Directory.GetFiles(folder, ext, SearchOption.AllDirectories))
-                    .Select(file => new ImageData 
-                    { 
-                        ImagePath = file, 
-                        Label = Directory.GetParent(file)!.Name 
-                    });
+        var images = new List<ImageData>();
+        var extensions = new[] { ".jpg", ".jpeg", ".png" };
+
+        // Get all files, then filter out anything that isn't a standard image
+        var allFiles = Directory.GetFiles(folder, "*.*", SearchOption.AllDirectories);
+
+        foreach (var file in allFiles)
+        {
+            var ext = Path.GetExtension(file).ToLower();
+            if (extensions.Contains(ext))
+            {
+                images.Add(new ImageData
+                {
+                    ImagePath = file,
+                    Label = Directory.GetParent(file)!.Name
+                });
+            }
+        }
+
+        if (images.Count == 0)
+            throw new Exception($"No valid images found in {folder}. Check your subfolders!");
+
+        Console.WriteLine($"Loaded {images.Count} images for training.");
+        return images;
     }
 }

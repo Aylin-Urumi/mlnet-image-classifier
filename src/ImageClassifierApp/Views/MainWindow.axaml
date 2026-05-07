@@ -41,7 +41,7 @@
         </Border>
 
         <Button Grid.Row="2" 
-                Content="Upload Digit" 
+                Content="Upload The Image"
                 Command="{Binding SelectImageCommand}"
                 HorizontalAlignment="Stretch" 
                 HorizontalContentAlignment="Center"

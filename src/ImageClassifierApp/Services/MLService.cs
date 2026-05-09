@@ -22,7 +22,6 @@ public class MLService
         {
             var images = LoadImagesFromDirectory(trainDataPath).ToList();
 
-            // Print the first path to the terminal so we can see it
             if (images.Any())
                 Console.WriteLine($"DEBUG: Attempting to load first image at: {images[0].ImagePath}");
 
@@ -40,7 +39,7 @@ public class MLService
         catch (Exception ex)
         {
             Console.WriteLine("--- ML.NET ENGINE ERROR ---");
-            Console.WriteLine(ex.ToString()); // This will show the FULL technical error in the terminal
+            Console.WriteLine(ex.ToString()); 
             throw;
         }
     }
@@ -65,7 +64,7 @@ public class MLService
             foreach (var file in files)
             {
                 string fileName = Path.GetFileName(file);
-                // MAC FIX: Ignore hidden files starting with "." (like .DS_Store or ._image)
+                
                 if (!fileName.StartsWith(".") && extensions.Contains(Path.GetExtension(file).ToLower()))
                 {
                     images.Add(new ImageData { ImagePath = file, Label = label });

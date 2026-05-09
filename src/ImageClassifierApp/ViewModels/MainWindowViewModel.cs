@@ -25,7 +25,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private async Task InitializeAsync()
     {
         IsBusy = true;
-        try 
+        try
         {
             string? currentDir = AppContext.BaseDirectory;
             string? projectSourceDir = null;
@@ -42,10 +42,9 @@ public partial class MainWindowViewModel : ViewModelBase
 
             if (!string.IsNullOrEmpty(projectSourceDir))
             {
-                // FIX: Path must be "Data" with capital D
                 string dataPath = Path.Combine(projectSourceDir, "Data");
-            
-                if (!Directory.Exists(dataPath)) 
+
+                if (!Directory.Exists(dataPath))
                     throw new Exception($"Data folder missing at: {dataPath}");
 
                 PredictionResult = "Training AI on digits... please wait.";
@@ -86,8 +85,15 @@ public partial class MainWindowViewModel : ViewModelBase
 
                 PredictionResult = "Analyzing...";
                 var result = await Task.Run(() => _mlService.Predict(file.Path.LocalPath));
-                PredictionResult = $"I think this is a: {result.PredictedLabel}";
+                var confidence = result.Score.Max() * 100;
+                PredictionResult = $"I think this is a: {result.PredictedLabel} ({confidence:0.#}%)";
             }
         }
+    }
+    [RelayCommand]
+    private void Clear()
+    {
+        SelectedImage = null;
+        PredictionResult = "Ready to classify.";
     }
 }

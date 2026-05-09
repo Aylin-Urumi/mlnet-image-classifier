@@ -4,19 +4,25 @@
         x:Class="ImageClassifierApp.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="Digit Classifier AI" 
-        Height="500" Width="400"
+        Height="650" Width="420"
         WindowStartupLocation="CenterScreen"
         Background="#F3F3F3">
 
     <Grid RowDefinitions="Auto, *, Auto" Margin="30">
         
-        <StackPanel Grid.Row="0" Spacing="5" Margin="0,0,0,20">
+        <StackPanel Grid.Row="0" Spacing="5" Margin="0,0,0,10">
             <TextBlock Text="Handwritten Digit AI" 
                        FontSize="24" FontWeight="SemiBold" 
                        Foreground="#333333" HorizontalAlignment="Center"/>
-            <TextBlock Text="{Binding PredictionResult}" 
-                       FontSize="14" Foreground="#666666" 
-                       HorizontalAlignment="Center" TextWrapping="Wrap"/>
+            
+            <Border Background="#E8E8E8" CornerRadius="10" Padding="15" Margin="0,15,0,5">
+                <TextBlock Text="{Binding PredictionResult}" 
+                           FontSize="18" 
+                           FontWeight="Bold" 
+                           Foreground="#007AFF"
+                           HorizontalAlignment="Center"
+                           TextWrapping="Wrap"/>
+            </Border>
             
             <ProgressBar IsIndeterminate="True" 
                          IsVisible="{Binding IsBusy}" 
@@ -40,20 +46,37 @@
             </Panel>
         </Border>
 
-        <Button Grid.Row="2" 
-                Content="Upload The Image"
-                Command="{Binding SelectImageCommand}"
-                HorizontalAlignment="Stretch" 
-                HorizontalContentAlignment="Center"
-                Padding="15" Margin="0,20,0,0"
-                Background="#007AFF" Foreground="White"
-                CornerRadius="8">
-            <Button.Styles>
-                <Style Selector="Button:pointerover /template/ ContentPresenter">
-                    <Setter Property="Background" Value="#0062CC"/>
-                </Style>
-            </Button.Styles>
-        </Button>
+        <StackPanel Grid.Row="2" Spacing="10" Margin="0,20,0,0">
+            
+            <Button Content="Upload The Image"
+                    Command="{Binding SelectImageCommand}"
+                    HorizontalAlignment="Stretch" 
+                    HorizontalContentAlignment="Center"
+                    Padding="15"
+                    Background="#007AFF" Foreground="White"
+                    CornerRadius="8">
+                <Button.Styles>
+                    <Style Selector="Button:pointerover /template/ ContentPresenter">
+                        <Setter Property="Background" Value="#0062CC"/>
+                    </Style>
+                </Button.Styles>
+            </Button>
+
+            <Button Content="Clear"
+                    Command="{Binding ClearCommand}"
+                    HorizontalAlignment="Stretch" 
+                    HorizontalContentAlignment="Center"
+                    Padding="15"
+                    Background="#E74C3C" Foreground="White"
+                    CornerRadius="8">
+                <Button.Styles>
+                    <Style Selector="Button:pointerover /template/ ContentPresenter">
+                        <Setter Property="Background" Value="#C0392B"/>
+                    </Style>
+                </Button.Styles>
+            </Button>
+            
+        </StackPanel>
 
     </Grid>
 </Window>

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.ML;
-using Microsoft.ML.Data;
 using ImageClassifierApp.Models;
 
 namespace ImageClassifierApp.Services;
@@ -31,7 +30,7 @@ public class MLService
 
             var pipeline = _mlContext.Transforms.Conversion.MapValueToKey("Label")
                 .Append(_mlContext.Transforms.LoadImages("ImageObject", imageFolder: null, inputColumnName: "ImagePath"))
-                .Append(_mlContext.Transforms.ResizeImages("ImageResized", 224, 224, "ImageObject"))
+                .Append(_mlContext.Transforms.ResizeImages("ImageResized", 28, 28, "ImageObject"))
                 .Append(_mlContext.Transforms.ExtractPixels("Features", "ImageResized"))
                 .Append(_mlContext.MulticlassClassification.Trainers.LbfgsMaximumEntropy("Label", "Features"))
                 .Append(_mlContext.Transforms.Conversion.MapKeyToValue("PredictedLabel"));

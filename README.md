@@ -35,15 +35,18 @@ Data/
 ...
 └── 9/ (Images of nines)
 
+---
+
 Note: Images are dynamically preprocessed and normalized to a standard 28x28 pixel resolution for lightning-fast training execution.
 
 ## ⚙️ How to Run
-Prerequisites
+
+#Prerequisites
 .NET SDK installed on your machine.
 
 A training dataset placed inside the Data/ directory as structured above.
 
-Execution Commands
+#Execution Commands
 Open your terminal in the project root directory and run the following commands to clear old build artifacts and start the application:
 
 dotnet clean
